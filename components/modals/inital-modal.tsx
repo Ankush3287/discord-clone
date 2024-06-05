@@ -1,9 +1,12 @@
 "use client";
 
+import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+
 import {
     Dialog,
     DialogContent,
@@ -37,6 +40,7 @@ const formSchema = z.object({
 
 export const InitialModal = () => {
     const [isMounted, setIsMounted] = useState(false);
+    const router = useRouter();
     useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -51,7 +55,15 @@ export const InitialModal = () => {
     const isLoading = form.formState.isSubmitting;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        console.log(values);
+        try {
+            await axios.post("/api/servers", values);
+            form.reset();
+            router.refresh();
+            window.location.reload();
+
+        } catch (error) {
+            console.log(error);
+        }
     }
     if (!isMounted) {
         return null;
@@ -74,7 +86,7 @@ export const InitialModal = () => {
                                 <FormField
                                 control ={form.control}
                                 name= "imageUrl"
-                                render= {({field})=>(
+                                render= {({ field })=>(
                                     <FormItem>
                                         <FormControl>
                                            <FileUpload endpoint="serverImage"
